@@ -5,7 +5,8 @@
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include "roboteq_serial_driver/wheelRPM.h"
+#include "roboteq_ros_driver/WheelRPM.h"
+
 
 double width_robot = 0.35; 
 double wheel_radius = 0.0475;
@@ -28,36 +29,16 @@ int ispublished = 0;
 	th = yaw_msgs.angular.z ; 
 }*/
 
-geometry_msgs::PoseStamped estpose;
-
-void poseCallback(const geometry_msgs::PoseWithCovarianceStamped &msg_)
+void WheelCallback(const roboteq_ros_driver::WheelRPM &robot_cmd)
 {
-  	estpose.header.frame_id = "odom";
-	estpose.header.stamp = msg_.header.stamp;
-	estpose.pose.position.x = msg_.pose.pose.position.x;
-	ROS_INFO_STREAM("x: " << estpose.pose.position.x);
-	estpose.pose.position.y = msg_.pose.pose.position.y;
-	estpose.pose.position.z = 0;
-	tf::Quaternion q(0, 0, msg_.pose.pose.orientation.z, msg_.pose.pose.orientation.w);
-	tf::Matrix3x3 m(q);
-	m.getRPY(roll, pitch, yaw);
-	estpose.pose.orientation.x = 0;
-	estpose.pose.orientation.y = 0;
-	estpose.pose.orientation.z = yaw;
-	estpose.pose.orientation.w = 0;
-	ispublished++;
-}
-
-void WheelCallback(const geometry_msgs::Twist &left_wheel)
-{
-	geometry_msgs::Twist twist = left_wheel;
-	double pulsesSecL= left_wheel.linear.x; 	
+	roboteq_ros_driver::WheelRPM wheel_rpm = robot_cmd;
+	double pulsesSecL= robot_cmd.left_wheel_rpm; 	
 	rpsL= pulsesSecL /npr; 
 	wl= (2*pi*rpsL);  
 	vl = wl*wheel_radius; 
 
-	geometry_msgs::Twist twist = right_wheel;	
-	double pulsesSecR= right_wheel.linear.x;  
+		
+	double pulsesSecR= robot_cmd.right_wheel_rpm;  
 	rpsR= pulsesSecR /npr; 
 	wr = (2*pi*rpsR); 
 	vr = wr*wheel_radius; 
@@ -69,7 +50,7 @@ int main(int argc, char** argv) {
 	ros::NodeHandle n;
 	ros::Publisher odom_pub = n.advertise<nav_msgs::Odometry>("odom", 10);
 	ros::Subscriber wheel_vel_sub = n.subscribe("/wheel_rpm", 1000, WheelCallback);
-        ros::Subscriber pose_est_sub = n.subscribe("/initialpose", 1000, poseCallback);
+    // ros::Subscriber pose_est_sub = n.subscribe("/initialpose", 1000, poseCallback);
 	// initial position
 	double x = 0.0; 
 	double y = 0.0;
@@ -98,17 +79,11 @@ int main(int argc, char** argv) {
 		double delta_x = (vl +vr)* cos(th)* dt/2;
 		double delta_y = (vl+vr)*sin(th) * dt/2;
 		double delta_th = ((vl-vr) / width_robot) * dt;
-		
-		if(l_state == c_state){
-			x += delta_x;
-			y += delta_y;
-			th += delta_th;
-			ROS_INFO_STREAM("angle: " << th);}
-		else if (l_state != c_state){
-			x = estpose.pose.position.x;
-			y = estpose.pose.position.y;
-			th = yaw;
-			ROS_INFO_STREAM("angle: " << yaw);}
+
+		x += delta_x;
+		y += delta_y;
+		th += delta_th;
+		ROS_INFO_STREAM("angle: " << th);
 
 		geometry_msgs::Quaternion odom_quat;	
 		odom_quat = tf::createQuaternionMsgFromYaw(th);

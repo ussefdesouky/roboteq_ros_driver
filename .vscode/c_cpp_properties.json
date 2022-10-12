@@ -1,0 +1,43 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/desouky/aerovect_ws/devel/include/**",
+        "/home/desouky/catkin_ws/devel/include/**",
+        "/home/desouky/ros_web_ws/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/desouky/ros_web_ws/src/people/face_detector/include/**",
+        "/home/desouky/aerovect_ws/src/gps_umd/gps_common/include/**",
+        "/home/desouky/aerovect_ws/src/gui/include/**",
+        "/home/desouky/aerovect_ws/src/gui_orch/include/**",
+        "/home/desouky/ros_web_ws/src/hoverboard-driver/include/**",
+        "/home/desouky/catkin_ws/src/imu_calib/include/**",
+        "/home/desouky/catkin_ws/src/imu_tools/imu_complementary_filter/include/**",
+        "/home/desouky/catkin_ws/src/imu_tools/imu_filter_madgwick/include/**",
+        "/home/desouky/ros_web_ws/src/laser_filters/include/**",
+        "/home/desouky/ros_web_ws/src/people/leg_detector/include/**",
+        "/home/desouky/ros_web_ws/src/leg_tracker/include/**",
+        "/home/desouky/catkin_ws/src/lino_pid/include/**",
+        "/home/desouky/catkin_ws/src/linorobot/include/**",
+        "/home/desouky/ros_web_ws/src/people/people_tracking_filter/include/**",
+        "/home/desouky/ros_web_ws/src/pid/include/**",
+        "/home/desouky/aerovect_ws/src/roboteq_ros_driver/include/**",
+        "/home/desouky/catkin_ws/src/rosserial/rosserial_server/include/**",
+        "/home/desouky/catkin_ws/src/rosserial/rosserial_test/include/**",
+        "/home/desouky/ros_web_ws/src/tf2_web_republisher/include/**",
+        "/home/desouky/catkin_ws/src/turtlebot3/turtlebot3_slam/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

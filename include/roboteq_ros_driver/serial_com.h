@@ -16,28 +16,11 @@ class RoboteqSerialDriver{
         std::string port;
 
     public:
-        ros::NodeHandle node;
-        ros::Subscriber cmd_vel;
-        // Custom rosmsg provide the speed of both the left and right wheel in [RPM]
-        ros::Publisher wheel_vel;
-
-        geometry_msgs::Twist wheel_twist;
-        geometry_msgs::Twist cmd_twist;
-
-        roboteq_ros_driver::WheelRPM robot_vel;
-        roboteq_ros_driver::WheelRPM robot_cmd;
-
-        // Channels
-        const std::uint8_t left_wheel = 0;
-        const std::uint8_t right_wheel = 1;
-
-
-
         bool init ();
         bool connect (std::string port, int baudrate);
         void run ();
 
-        void velCallback(const geometry_msgs::Twist &msg);
+        void velCallback(const geometry_msgs::Twist::ConstPtr &msg);
 
         void initDriver ();
         void initMotor ();

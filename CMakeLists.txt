@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   serial
   std_msgs
   geometry_msgs
+  tf
   message_generation
 
 )
@@ -114,8 +115,10 @@ catkin_package(
   CATKIN_DEPENDS 
     message_runtime
     roscpp 
+    std_msgs
     rospy 
     serial
+    tf
 #  DEPENDS system_lib
 )
 
@@ -160,7 +163,7 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(odom src/odom.cpp)
+add_executable(odom src/odom_controller.cpp)
 add_dependencies(odom ${catkin_EXPORTED_TARGETS})
 target_link_libraries(odom ${catkin_LIBRARIES})
 
