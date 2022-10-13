@@ -7,8 +7,8 @@ roboteq_ros_driver::WheelRPM robot_vel;
 roboteq_ros_driver::WheelRPM robot_cmd;
 
 // Channels
-const std::uint8_t left_wheel = 0;
-const std::uint8_t right_wheel = 1;
+const std::uint16_t left_wheel = 0;
+const std::uint16_t right_wheel = 1;
 
 void velCallback(const geometry_msgs::Twist::ConstPtr &msg){
     // m/s to rpm conversion
@@ -47,9 +47,6 @@ bool RoboteqSerialDriver::connect (std::string port, int baudrate){
         return -1;
     } 
 
-    ros::Rate loop_rate(10);
-
-    run ();
 }
 
 void RoboteqSerialDriver::run(){
@@ -58,13 +55,14 @@ void RoboteqSerialDriver::run(){
 
 // Runtime commands
 // Note: The param arg could be the wheel number or the IO bit to set or reset
-void RoboteqSerialDriver::setCommand (std::string command_type, std::uint8_t param,  std::int32_t value){
+void RoboteqSerialDriver::setCommand (std::string command_type, std::uint16_t param,  std::int32_t value){
     std::stringstream runtime_cmd;
-    runtime_cmd << command_type << " " << param << " " << value << "\r";
+    runtime_cmd << command_type << " " << param << " " << value << "\r\n";
     ser.write(runtime_cmd.str());
+    //ROS_INFO_STREAM(runtime_cmd.str());
     ser.flush();
 }
-void RoboteqSerialDriver::setCommand (std::string command_type, std::uint8_t param){
+void RoboteqSerialDriver::setCommand (std::string command_type, std::uint16_t param){
 
 }
 void RoboteqSerialDriver::setCommand (std::string command_type){
@@ -73,10 +71,10 @@ void RoboteqSerialDriver::setCommand (std::string command_type){
 
 // Runtime queries
 // Note: 
-std::int32_t RoboteqSerialDriver::getQuery (std::string query_type, std::uint8_t param,  std::int32_t value){
+std::int32_t RoboteqSerialDriver::getQuery (std::string query_type, std::uint16_t param,  std::int32_t value){
 
 }
-std::int32_t RoboteqSerialDriver::getQuery (std::string query_type, std::uint8_t param){
+std::int32_t RoboteqSerialDriver::getQuery (std::string query_type, std::uint16_t param){
     std::stringstream query_cmd; 
     std::string response;
     query_cmd << query_type << " " << param << "\r";
@@ -84,8 +82,8 @@ std::int32_t RoboteqSerialDriver::getQuery (std::string query_type, std::uint8_t
     ser.flush();
     response = ser.read(ser.available());
     // clean data
-    std::uint8_t equal = response.find("=");
-    std::uint8_t delim = response.find(":");
+    std::uint16_t equal = response.find("=");
+    std::uint16_t delim = response.find(":");
     std::string temp;
     temp = response.substr(equal + 1, delim - 2);
     robot_vel.right_wheel_rpm = std::stoi(temp);
@@ -99,22 +97,22 @@ std::int32_t RoboteqSerialDriver::getQuery (std::string query_type){
 
 // Motor configurations
 // Note: 
-void RoboteqSerialDriver::setConfig (std::string config_type, std::uint8_t param, std::uint8_t action, std::uint8_t motor){
+void RoboteqSerialDriver::setConfig (std::string config_type, std::uint16_t param, std::uint16_t action, std::uint16_t motor){
     std::stringstream config_cmd; 
-    std::uint8_t value = action + motor;
+    std::uint16_t value = action + motor;
     config_cmd << config_type << " " << param << " " << value << "\r";
     ser.write(config_cmd.str());
     ser.flush();
 }
 
-void RoboteqSerialDriver::setConfig (std::string config_type, std::uint8_t param,  std::int32_t value){
+void RoboteqSerialDriver::setConfig (std::string config_type, std::uint16_t param,  std::int32_t value){
     std::stringstream config_cmd; 
     config_cmd << config_type << " " << param << " " << value << "\r";
     ser.write(config_cmd.str());
     ser.flush();
 }
 
-void RoboteqSerialDriver::setConfig (std::string config_type, std::uint8_t param){
+void RoboteqSerialDriver::setConfig (std::string config_type, std::uint16_t param){
     std::stringstream config_cmd;
     config_cmd << config_type << " " << param << "\r";
     ser.write(config_cmd.str());
@@ -208,32 +206,43 @@ void RoboteqSerialDriver::initIO(){
     // TODO
 }
 
-void RoboteqSerialDriver::getRPM (int right_wheel_rpm, int left_wheel_rpm){
+void RoboteqSerialDriver::getRPM (roboteq_ros_driver::WheelRPM wheel_vel){
     std::string response;
     ser.write("!BS\r");
     ser.flush();
     response = ser.read(ser.available());
+    ROS_INFO_STREAM(response);
+    if(response.length() > 0){
+        std::uint16_t equal = response.find("=");
+        std::uint16_t delim = response.find(":");
+        std::string temp;
+        temp = response.substr(equal + 1, delim - 2);
+        wheel_vel.right_wheel_rpm = std::stoi(temp);
+        temp = response.substr(delim + 1);
+        wheel_vel.left_wheel_rpm = std::stoi(temp);
+    }
     // clean data
-    std::uint8_t equal = response.find("=");
-    std::uint8_t delim = response.find(":");
-    std::string temp;
-    temp = response.substr(equal + 1, delim - 2);
-    wheel_twist.linear.x = std::stoi(temp);
-    temp = response.substr(delim + 1);
-    left_wheel_rpm = std::stoi(temp);
+
 }
 
 int main(int argc, char* argv[]){
     ros::init(argc, argv, "roboteq_serial_driver");
     ros::NodeHandle node;
-    ros::Subscriber cmd_vel;
+    ros::Subscriber cmd_vel_sub;
     // Custom rosmsg provide the speed of both the left and right wheel in [RPM]
-    ros::Publisher wheel_vel;
-    wheel_vel = node.advertise<geometry_msgs::Twist>("/wheel_vel", 1000);
-    cmd_vel =  node.subscribe("/cmd_vel", 1000, velCallback);
+    ros::Publisher wheel_vel_pub;
+    wheel_vel_pub = node.advertise<geometry_msgs::Twist>("/wheel_vel", 1000);
+    cmd_vel_sub =  node.subscribe("/cmd_vel", 1000, velCallback);
+
+    ros::Rate loop_rate(10);
 
     RoboteqSerialDriver controller;
-    controller.setCommand("!S", left_wheel, robot_cmd.left_wheel_rpm);
-    controller.setCommand("!S", right_wheel, robot_cmd.right_wheel_rpm);
-    
+    while(ros::ok()){
+        controller.setCommand("!S", left_wheel, robot_cmd.left_wheel_rpm);
+        controller.setCommand("!S", right_wheel, robot_cmd.right_wheel_rpm);
+
+        //controller.getRPM(robot_vel);
+        //wheel_vel_pub.publish(robot_vel);
+        ros::spinOnce();
+    }
 }

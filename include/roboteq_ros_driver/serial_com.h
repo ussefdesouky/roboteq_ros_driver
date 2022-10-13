@@ -30,25 +30,25 @@ class RoboteqSerialDriver{
 
         // Runtime commands
         // Note: The param arg could be the wheel number or the IO bit to set or reset
-        void setCommand (std::string cmd, std::uint8_t param,  std::int32_t value);
-        void setCommand (std::string cmd, std::uint8_t param);
+        void setCommand (std::string cmd, std::uint16_t param,  std::int32_t value);
+        void setCommand (std::string cmd, std::uint16_t param);
         void setCommand (std::string cmd);
 
         // Runtime queries
-        std::int32_t getQuery (std::string query_type, std::uint8_t param,  std::int32_t value);
-        std::int32_t getQuery (std::string query_type, std::uint8_t param);
+        std::int32_t getQuery (std::string query_type, std::uint16_t param,  std::int32_t value);
+        std::int32_t getQuery (std::string query_type, std::uint16_t param);
         std::int32_t getQuery (std::string query_type);
 
-        void getRPM(int right_wheel_rpm, int left_wheel_rpm);
+        void getRPM(roboteq_ros_driver::WheelRPM wheel_vel);
 
         // Motor, IO & BLDC configurations
         // Write
-        void setConfig (std::string config_type, std::uint8_t param, std::uint8_t action, std::uint8_t motor);
-        void setConfig (std::string config_type, std::uint8_t param, std::int32_t value);
-        void setConfig (std::string config_type, std::uint8_t param);
+        void setConfig (std::string config_type, std::uint16_t param, std::uint16_t action, std::uint16_t motor);
+        void setConfig (std::string config_type, std::uint16_t param, std::int32_t value);
+        void setConfig (std::string config_type, std::uint16_t param);
         void setConfig (std::string config_type);
         // Read
-        std::uint32_t getConfig (std::string config_type, std::uint8_t param);
+        std::uint32_t getConfig (std::string config_type, std::uint16_t param);
         std::uint32_t getConfig (std::string config_type);
 
         RoboteqSerialDriver (){
